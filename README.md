@@ -14,7 +14,9 @@ There are several unique elements to the way that this token mechanism operates:
 
 - The token, upon every transaction, will calculate automatically how much tax the sender owes in addition to their sent amount of tokens at their transactional tax rate. If there is not enough tokens to pay for the transaction, it will fail and the user will have to reduce their sent.
 - The mechanism of how much sender owes is up to the token creator, and can be progressive, flat, or regressive based on the goals of the community.
+- The funds can be send to any address that the community wishes. This will be controlled by the owner of the contract.
 - Some community accounts can be considered excempt from the community tax, as these are community assets that ultimately benefit from the token. These can include community funds, faucets or any other accounts or smart contracts that are exempt from paying taxes.
+- The token owner role cannot be renounced, but it is transferrable.
 
 ## Comrade Token Specifics
 
