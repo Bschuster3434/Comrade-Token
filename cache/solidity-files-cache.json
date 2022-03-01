@@ -1,9 +1,9 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "E:\\Solidity Projects\\Comrade-Token\\contracts\\ComradeToken.sol": {
-      "lastModificationDate": 1645911225880,
-      "contentHash": "a1be65adb7f8486e480a4e7fb342c0d9",
+    "C:\\Users\\brian\\Documents\\Solidity_Projects\\Comrade-Token\\contracts\\ComradeToken.sol": {
+      "lastModificationDate": 1646154310573,
+      "contentHash": "4f5a6e1868d31f957354a37cafc31bf6",
       "sourceName": "contracts/ComradeToken.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -29,6 +29,7 @@
         }
       },
       "imports": [
+        "hardhat/console.sol",
         "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol"
       ],
@@ -39,8 +40,8 @@
         "ComradeToken"
       ]
     },
-    "E:\\Solidity Projects\\Comrade-Token\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\ERC20.sol": {
-      "lastModificationDate": 1645911163755,
+    "C:\\Users\\brian\\Documents\\Solidity_Projects\\Comrade-Token\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\ERC20.sol": {
+      "lastModificationDate": 1646150975501,
       "contentHash": "bab063ddd80e9cc9e313361fef7ef07f",
       "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
       "solcConfig": {
@@ -78,8 +79,8 @@
         "ERC20"
       ]
     },
-    "E:\\Solidity Projects\\Comrade-Token\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\ERC20Burnable.sol": {
-      "lastModificationDate": 1645911163756,
+    "C:\\Users\\brian\\Documents\\Solidity_Projects\\Comrade-Token\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\ERC20Burnable.sol": {
+      "lastModificationDate": 1646150975511,
       "contentHash": "a1c7f80ae26f5b2d7d563475627fbf25",
       "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol",
       "solcConfig": {
@@ -116,8 +117,8 @@
         "ERC20Burnable"
       ]
     },
-    "E:\\Solidity Projects\\Comrade-Token\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\IERC20.sol": {
-      "lastModificationDate": 1645911163872,
+    "C:\\Users\\brian\\Documents\\Solidity_Projects\\Comrade-Token\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\IERC20.sol": {
+      "lastModificationDate": 1646150976452,
       "contentHash": "a44d1a099633876550ad2476b21bafbe",
       "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
       "solcConfig": {
@@ -151,8 +152,8 @@
         "IERC20"
       ]
     },
-    "E:\\Solidity Projects\\Comrade-Token\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\IERC20Metadata.sol": {
-      "lastModificationDate": 1645911163873,
+    "C:\\Users\\brian\\Documents\\Solidity_Projects\\Comrade-Token\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\IERC20Metadata.sol": {
+      "lastModificationDate": 1646150976452,
       "contentHash": "909ab67fc5c25033fe6cd364f8c056f9",
       "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
       "solcConfig": {
@@ -188,8 +189,8 @@
         "IERC20Metadata"
       ]
     },
-    "E:\\Solidity Projects\\Comrade-Token\\node_modules\\@openzeppelin\\contracts\\utils\\Context.sol": {
-      "lastModificationDate": 1645911163729,
+    "C:\\Users\\brian\\Documents\\Solidity_Projects\\Comrade-Token\\node_modules\\@openzeppelin\\contracts\\utils\\Context.sol": {
+      "lastModificationDate": 1646150974886,
       "contentHash": "5f2c5c4b6af2dd4551027144797bc8be",
       "sourceName": "@openzeppelin/contracts/utils/Context.sol",
       "solcConfig": {
@@ -221,6 +222,41 @@
       ],
       "artifacts": [
         "Context"
+      ]
+    },
+    "C:\\Users\\brian\\Documents\\Solidity_Projects\\Comrade-Token\\node_modules\\hardhat\\console.sol": {
+      "lastModificationDate": 1646150978750,
+      "contentHash": "cc4777addd464ea56fa35b1c45df0591",
+      "sourceName": "hardhat/console.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.22 <0.9.0"
+      ],
+      "artifacts": [
+        "console"
       ]
     }
   }
