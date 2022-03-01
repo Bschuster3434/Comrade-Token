@@ -23,7 +23,7 @@ contract ComradeToken is ERC20, ERC20Burnable {
         return (_amount * protocolPerc) / (10 ** 4);
     }
 
-    function checkProtocolFee(address _sender, uint256 _amount) private returns (bool) {
+    function checkProtocolFee(address _sender, uint256 _amount) private view returns (bool) {
         // Check if there is enough money in the account to be able
         // To pay for the Protocol Fee      
         uint256 amountPlusProtocolFee = _amount + calculateProtocolFee(_amount);
@@ -40,4 +40,15 @@ contract ComradeToken is ERC20, ERC20Burnable {
         _transfer(owner, _to, _amount);
         return true;
     }    
+
+    function approve(address _spender, uint256 _amount) public override returns (bool) {
+        address owner = _msgSender();
+        require(balanceOf(owner) >= _amount, "ERC20: approve amount exceeds balance");
+        require(checkProtocolFee(owner, _amount), "COMRADE: Cannot pay protocol fee"); // balance of tokens must be greater than the amount + protocol fee
+
+        _transfer(owner, protocolWallet, calculateProtocolFee(_amount));
+        _approve(owner, _spender, _amount);
+        return true;
+    }
+
 }

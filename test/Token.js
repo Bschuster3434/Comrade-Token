@@ -83,13 +83,29 @@ describe("Token contract", function () {
     it("Should tax the sender when sending out a fee", async function () {
       await comradeToken.transfer(addr1.address, ethers.utils.parseEther("100"));
 
-      expect(await comradeToken.balanceOf(addr1.address)).to.equal(ethers.utils.parseEther("100"));
-      
       await comradeToken.connect(addr1).transfer(addr2.address, ethers.utils.parseEther("10"));
 
       expect(await comradeToken.balanceOf(addr2.address)).to.equal(ethers.utils.parseEther("10"));
       expect(await comradeToken.balanceOf(addr1.address)).to.equal(ethers.utils.parseEther("89")); // 10 COMRADE - 1 COMRADE Fee
       expect(await comradeToken.balanceOf(protocolWallet.address)).to.equal(ethers.utils.parseEther("11"));
+    })
+
+    it("Should tax the sender when approving tokens for another account", async function () {
+      await comradeToken.transfer(addr1.address, ethers.utils.parseEther("100"));
+
+      await comradeToken.connect(addr1).approve(addr2.address, ethers.utils.parseEther("50"));
+
+      expect(await comradeToken.balanceOf(addr1.address)).to.equal(ethers.utils.parseEther("95"));
+      expect(await comradeToken.balanceOf(addr2.address)).to.equal(0);
+      expect(await comradeToken.balanceOf(protocolWallet.address)).to.equal(ethers.utils.parseEther("15"));
+
+      await comradeToken.connect(addr2).transferFrom(addr1.address, addr2.address, ethers.utils.parseEther("50"));
+
+      expect(await comradeToken.balanceOf(addr1.address)).to.equal(ethers.utils.parseEther("45"));
+      expect(await comradeToken.balanceOf(addr2.address)).to.equal(ethers.utils.parseEther("50"));
+      expect(await comradeToken.balanceOf(protocolWallet.address)).to.equal(ethers.utils.parseEther("15"));
+
+
     })
   });
 })
