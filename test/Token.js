@@ -7,16 +7,17 @@ describe("Token contract", function () {
     let owner;
     let addr1;
     let addr2;
+    let addr3;
     let protocolWallet;
     let addrs;
 
   beforeEach(async function () {
-    [owner, addr1, addr2, protocolWallet, ...addrs] = await ethers.getSigners();
+    [owner, addr1, addr2, addr3, protocolWallet, ...addrs] = await ethers.getSigners();
 
     protocolPerc = 1000; //10% Fee
 
     Token = await ethers.getContractFactory("ComradeToken");
-    comradeToken = await Token.deploy(protocolPerc, protocolWallet.address);
+    comradeToken = await Token.deploy(protocolPerc, protocolWallet.address, "Comrade Token", "COMRADE");
 
   });
   describe("Deployment", function () {
@@ -95,17 +96,65 @@ describe("Token contract", function () {
 
       await comradeToken.connect(addr1).approve(addr2.address, ethers.utils.parseEther("50"));
 
-      expect(await comradeToken.balanceOf(addr1.address)).to.equal(ethers.utils.parseEther("95"));
+      expect(await comradeToken.balanceOf(addr1.address)).to.equal(ethers.utils.parseEther("100"));
       expect(await comradeToken.balanceOf(addr2.address)).to.equal(0);
-      expect(await comradeToken.balanceOf(protocolWallet.address)).to.equal(ethers.utils.parseEther("15"));
+      expect(await comradeToken.balanceOf(protocolWallet.address)).to.equal(ethers.utils.parseEther("10"));
+      expect(await comradeToken.getAllowanceHolding(addr1.address)).to.equal(ethers.utils.parseEther("5"));
 
       await comradeToken.connect(addr2).transferFrom(addr1.address, addr2.address, ethers.utils.parseEther("50"));
 
       expect(await comradeToken.balanceOf(addr1.address)).to.equal(ethers.utils.parseEther("45"));
       expect(await comradeToken.balanceOf(addr2.address)).to.equal(ethers.utils.parseEther("50"));
       expect(await comradeToken.balanceOf(protocolWallet.address)).to.equal(ethers.utils.parseEther("15"));
+      expect(await comradeToken.getAllowanceHolding(addr1.address)).to.equal(0);
+    })
 
+    it("Should tax me additional funds if I increase my allownace", async function () {
+      await comradeToken.transfer(addr1.address, ethers.utils.parseEther("100"));
 
+      await comradeToken.connect(addr1).approve(addr2.address, ethers.utils.parseEther("50"));
+
+      await comradeToken.connect(addr1).increaseAllowance(addr2.address, ethers.utils.parseEther("10"));
+
+      expect(await comradeToken.balanceOf(addr1.address)).to.equal(ethers.utils.parseEther("100"));
+      expect(await comradeToken.balanceOf(protocolWallet.address)).to.equal(ethers.utils.parseEther("10"));
+      expect(await comradeToken.getAllowanceHolding(addr1.address)).to.equal(ethers.utils.parseEther("6"));
+    })
+
+    it("Should tax me less funds if I decrease my allownance", async function () {
+      await comradeToken.transfer(addr1.address, ethers.utils.parseEther("100"));
+
+      await comradeToken.connect(addr1).approve(addr2.address, ethers.utils.parseEther("50"));
+
+      await comradeToken.connect(addr1).decreaseAllowance(addr2.address, ethers.utils.parseEther("10"));
+      
+      expect(await comradeToken.balanceOf(addr1.address)).to.equal(ethers.utils.parseEther("100"));
+      expect(await comradeToken.balanceOf(protocolWallet.address)).to.equal(ethers.utils.parseEther("10"));
+      expect(await comradeToken.getAllowanceHolding(addr1.address)).to.equal(ethers.utils.parseEther("4"));  
+    })
+
+    it("Should not allow approved tokens to be spent if the fee is not available", async function () {
+      await comradeToken.transfer(addr1.address, ethers.utils.parseEther("100"));
+
+      await comradeToken.connect(addr1).approve(addr2.address, ethers.utils.parseEther("50"));
+
+      await comradeToken.connect(addr1).transfer(addr3.address, ethers.utils.parseEther("50"));
+
+      await expect(
+        comradeToken.connect(addr2)
+        .transferFrom(addr1.address, addr2.address, ethers.utils.parseEther("50")))
+        .to.be.revertedWith("ERC20: transfer amount exceeds balance");
+
+      expect(await comradeToken.balanceOf(addr2.address)).to.equal(0);
+      
+      await comradeToken.connect(addr1).transfer(addr3.address, ethers.utils.parseEther("40"));
+
+      await expect(
+        comradeToken.connect(addr2)
+        .transferFrom(addr1.address, addr2.address, ethers.utils.parseEther("1")))
+        .to.be.revertedWith("ERC20: transfer amount exceeds balance");
+
+      comradeToken.connect(addr2).transferFrom(addr1.address, addr2.address, ethers.utils.parseEther("0.001"));
     })
   });
 })
