@@ -64,6 +64,32 @@ describe("Token contract", function () {
 
       expect(await comradeToken.getProtocolWallet()).to.equal(addr3.address);
     })
+
+    it("Allows the owner to exempt accounts from paying fees", async function () {
+      expect(await comradeToken.getExemptStatus(addr1.address)).to.equal(false);
+
+      await comradeToken.addExemptAddress(addr1.address);
+
+      expect(await comradeToken.getExemptStatus(addr1.address)).to.equal(true);
+    })
+
+    it("Does not allow me to exempt an account if it's already exempt", async function () {
+      await comradeToken.addExemptAddress(addr1.address);
+      await expect(comradeToken.addExemptAddress(addr1.address))
+        .to.be.revertedWith("Account is already exempt");
+    })
+    
+    it("Allows the owner to remove exempt accounts", async function () {
+      await comradeToken.addExemptAddress(addr1.address);
+      await comradeToken.removeExemptAddress(addr1.address);
+      expect(await comradeToken.getExemptStatus(addr1.address)).to.equal(false);
+    }) 
+
+    it("Does not allow me to remove an exempt account if it's not exempt", async function () {
+      await expect(comradeToken.removeExemptAddress(addr1.address))
+        .to.be.revertedWith("Account is not exempt");      
+    })
+
   })
 
   describe("Transactions", function () {
@@ -189,6 +215,61 @@ describe("Token contract", function () {
         .to.be.revertedWith("ERC20: transfer amount exceeds balance");
 
       comradeToken.connect(addr2).transferFrom(addr1.address, addr2.address, ethers.utils.parseEther("0.001"));
+    })
+
+    it("Should allow an exempt account to not have to pay fees", async function () {
+      await comradeToken.addExemptAddress(addr1.address);
+      await comradeToken.transfer(addr1.address, ethers.utils.parseEther("1000"));
+
+      await comradeToken.connect(addr1).transfer(addr2.address, ethers.utils.parseEther("500"));
+      await comradeToken.connect(addr1).transfer(addr3.address, ethers.utils.parseEther("500"));
+
+      expect(await comradeToken.balanceOf(addr1.address)).to.equal(0);
+      expect(await comradeToken.getTotalTokensSent(addr1.address)).to.equal(ethers.utils.parseEther("1000"));
+      expect(await comradeToken.getTotalFeesPaid(addr1.address)).to.equal(0);
+    })
+    
+    it("Should make an account pay a fee after it's been made exempt", async function () {
+      await comradeToken.addExemptAddress(addr1.address);
+      await comradeToken.transfer(addr1.address, ethers.utils.parseEther("1000"));
+
+      await comradeToken.connect(addr1).transfer(addr2.address, ethers.utils.parseEther("500"));
+      expect(await comradeToken.getTotalFeesPaid(addr1.address)).to.equal(0);
+
+      await comradeToken.removeExemptAddress(addr1.address);
+      await comradeToken.connect(addr1).transfer(addr2.address, ethers.utils.parseEther("400"));
+      expect(await comradeToken.getTotalFeesPaid(addr1.address)).to.equal(ethers.utils.parseEther("40"));
+      expect(await comradeToken.balanceOf(addr1.address)).to.equal(ethers.utils.parseEther("60"))
+    }) 
+
+    it("Should make an exempt account not pay fees on approved funds", async function () {
+      await comradeToken.addExemptAddress(addr1.address);
+      await comradeToken.transfer(addr1.address, ethers.utils.parseEther("1000"));
+      let protocolWalletStartBalance = await comradeToken.balanceOf(protocolWallet.address);
+      
+      await comradeToken.connect(addr1).approve(addr2.address, ethers.utils.parseEther("1000"))
+
+      await comradeToken.connect(addr2).transferFrom(addr1.address, addr3.address, ethers.utils.parseEther("500"))
+      expect(await comradeToken.balanceOf(addr1.address)).to.equal(ethers.utils.parseEther("500"));
+      expect(await comradeToken.balanceOf(protocolWallet.address)).to.equal(protocolWalletStartBalance);
+
+      await comradeToken.connect(addr2).transferFrom(addr1.address, addr3.address, ethers.utils.parseEther("500"))
+      expect(await comradeToken.balanceOf(addr1.address)).to.equal(0);
+      expect(await comradeToken.balanceOf(protocolWallet.address)).to.equal(protocolWalletStartBalance)
+    })
+
+    it("Should not increase the allowanceHolding on exempt accounts", async function () {
+      await comradeToken.addExemptAddress(addr1.address);
+      await comradeToken.transfer(addr1.address, ethers.utils.parseEther("1000"));
+      
+      await comradeToken.connect(addr1).approve(addr2.address, ethers.utils.parseEther("500"))
+      expect(await comradeToken.getAllowanceHolding(addr1.address)).to.equal(0);
+
+      await comradeToken.connect(addr1).increaseAllowance(addr2.address, ethers.utils.parseEther("200"));
+      expect(await comradeToken.getAllowanceHolding(addr1.address)).to.equal(0);
+
+      await comradeToken.connect(addr1).decreaseAllowance(addr2.address, ethers.utils.parseEther("100"));
+      expect(await comradeToken.getAllowanceHolding(addr1.address)).to.equal(0);      
     })
   });
 
