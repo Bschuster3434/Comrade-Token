@@ -4,8 +4,10 @@ pragma solidity ^0.8.4;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ComradeToken is ERC20, ERC20Burnable {
+contract ComradeToken is ERC20, ERC20Burnable, Ownable {
+    uint16 private protocolDenomenator = 10 ** 4;
     uint16 private protocolPerc;
     address payable private protocolWallet;
     mapping(address => uint256) allowanceHolding;
@@ -22,6 +24,7 @@ contract ComradeToken is ERC20, ERC20Burnable {
         string memory _tokenName,
         string memory _tokenSymbol
     ) ERC20(_tokenName, _tokenSymbol) {
+        require(_protocolPerc <= protocolDenomenator, "Cannot set protocol greater than 100%");
         _mint(msg.sender, 1000000000 * 18 ** decimals());
         protocolPerc = _protocolPerc; // protocol percentage is ( protocalPerc / 10 ** 4)
         protocolWallet = _protocolWallet;
@@ -48,10 +51,27 @@ contract ComradeToken is ERC20, ERC20Burnable {
         return addressStats[_user].totalTokensSent;
     }
 
+    function getProtocolPerc() public view returns (uint16) {
+        return protocolPerc;
+    }
+
+    function getProtocolWallet() public view returns (address) {
+        return protocolWallet;
+    }
+
+    function setProtocolPerc(uint16 _newProtocolPerc) public onlyOwner {
+        require(_newProtocolPerc <= protocolDenomenator, "Cannot set protocol greater than 100%");
+        protocolPerc = _newProtocolPerc;
+    }
+
+    function setProtocolWallet(address payable _newProtocolWallet) public onlyOwner {
+        protocolWallet = _newProtocolWallet;
+    }
+
     function calculateProtocolFee(
         uint256 _amount
     ) public view returns (uint256) {
-        return (_amount * protocolPerc) / (10 ** 4);
+        return (_amount * protocolPerc) / protocolDenomenator;
     }
 
     function checkProtocolFee(

@@ -30,6 +30,40 @@ describe("Token contract", function () {
         const ownerBalance = await comradeToken.balanceOf(owner.address);
         expect(await comradeToken.totalSupply()).to.equal(ownerBalance);
       });
+
+      it("Should not allow me to deploy with a protocalPerc over 10000", async function () {
+        await expect(Token.deploy(10001, protocolWallet.address, "Comrade Token 2", "COMRADE2"))
+          .to.be.revertedWith("Cannot set protocol greater than 100%");
+      })
+  })
+
+  describe("Owner functions", function () {
+    it("Should create an owner when deployed", async function () {
+      expect(await comradeToken.owner()).to.equal(owner.address);
+    })
+
+    it("Should allow the owner to change the protocol percent", async function () {
+      expect(await comradeToken.getProtocolPerc()).to.equal(1000);
+
+      await comradeToken.setProtocolPerc(500);
+
+      expect(await comradeToken.getProtocolPerc()).to.equal(500);
+    })
+
+    it("Should not allow the owner to change the protocol percent above 100%", async function () {
+      await expect(comradeToken.setProtocolPerc(10001))
+        .to.be.revertedWith("Cannot set protocol greater than 100%");
+      await expect(comradeToken.setProtocolPerc((2 ** 16) - 1))
+        .to.be.revertedWith("Cannot set protocol greater than 100%");        
+    })
+
+    it("Should allow the owner to change the protocolWallet address", async function () {
+      expect(await comradeToken.getProtocolWallet()).to.equal(protocolWallet.address);
+
+      await comradeToken.setProtocolWallet(addr3.address);
+
+      expect(await comradeToken.getProtocolWallet()).to.equal(addr3.address);
+    })
   })
 
   describe("Transactions", function () {
