@@ -157,4 +157,52 @@ describe("Token contract", function () {
       comradeToken.connect(addr2).transferFrom(addr1.address, addr2.address, ethers.utils.parseEther("0.001"));
     })
   });
+
+  describe("AccountStatistics", function () {
+    beforeEach(async function () {
+      await comradeToken.transfer(addr1.address, ethers.utils.parseEther("1000"));
+    })
+    it("Should give me the total tax paid by an account", async function () {
+      expect(await comradeToken.getTotalFeesPaid(addr1.address)).to.equal(0);
+
+      await comradeToken.connect(addr1).transfer(addr2.address, ethers.utils.parseEther("10"));
+
+      expect(await comradeToken.getTotalFeesPaid(addr1.address)).to.equal(ethers.utils.parseEther("1"));
+
+      await comradeToken.connect(addr1).transfer(addr2.address, ethers.utils.parseEther("15"));
+
+      expect(await comradeToken.getTotalFeesPaid(addr1.address)).to.equal(ethers.utils.parseEther("2.5"));
+    })
+    
+    it("Should not increase fees paid if called approve or allowance functions", async function () {
+      await comradeToken.connect(addr1).approve(addr2.address, ethers.utils.parseEther("10"));
+      await comradeToken.connect(addr1).increaseAllowance(addr2.address, ethers.utils.parseEther("5"));
+      await comradeToken.connect(addr1).decreaseAllowance(addr2.address, ethers.utils.parseEther(".005"));
+      
+      expect(await comradeToken.getTotalFeesPaid(addr1.address)).to.equal(0);
+    })
+
+    it("Should accurately tell me how much of the COMRADE token was sent by successful transfers", async function () {
+      await comradeToken.connect(addr1).transfer(addr2.address, ethers.utils.parseEther("100"));
+      await comradeToken.connect(addr1).transfer(addr2.address, ethers.utils.parseEther("400"));
+      await expect(comradeToken.connect(addr1).transfer(addr2.address, ethers.utils.parseEther("500")))
+        .to.be.revertedWith("ERC20: transfer amount exceeds balance");
+      await expect(comradeToken.connect(addr1).transfer(addr2.address, ethers.utils.parseEther("450")))
+        .to.be.revertedWith("COMRADE: Cannot pay protocol fee");
+        
+      expect(await comradeToken.getTotalTokensSent(addr1.address)).to.equal(ethers.utils.parseEther("500"));
+    })
+
+    it("Should accurately tell me how much of the COMRADE token was sent by successful transferFrom", async function () {
+      await comradeToken.connect(addr1).approve(addr2.address, ethers.utils.parseEther("100"));
+      await comradeToken.connect(addr1).approve(addr2.address, ethers.utils.parseEther("400"));
+
+      expect(await comradeToken.getTotalTokensSent(addr1.address)).to.equal(0);
+
+      await comradeToken.connect(addr2).transferFrom(addr1.address, addr3.address, ethers.utils.parseEther("50"))
+
+      expect(await comradeToken.getTotalTokensSent(addr1.address)).to.equal(ethers.utils.parseEther("50"));
+    })
+
+  })
 })

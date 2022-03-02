@@ -10,6 +10,12 @@ contract ComradeToken is ERC20, ERC20Burnable {
     address payable private protocolWallet;
     mapping(address => uint256) allowanceHolding;
 
+    struct addressStatistic {
+        uint256 totalFeesPaid;
+        uint256 totalTokensSent;
+    }
+    mapping(address => addressStatistic) private addressStats;
+
     constructor(
         uint16 _protocolPerc, 
         address payable _protocolWallet,
@@ -34,6 +40,14 @@ contract ComradeToken is ERC20, ERC20Burnable {
         return allowanceHolding[_user];
     }
 
+    function getTotalFeesPaid(address _user) public view returns (uint256) {
+        return addressStats[_user].totalFeesPaid;
+    }
+
+    function getTotalTokensSent(address _user) public view returns (uint256) {
+        return addressStats[_user].totalTokensSent;
+    }
+
     function calculateProtocolFee(
         uint256 _amount
     ) public view returns (uint256) {
@@ -55,6 +69,10 @@ contract ComradeToken is ERC20, ERC20Burnable {
         uint256 _amount
     ) public override requireProtocolFee(_amount) returns (bool) {
         address owner = _msgSender();
+        uint256 protocolFee = calculateProtocolFee(_amount);
+
+        addressStats[owner].totalFeesPaid += protocolFee;
+        addressStats[owner].totalTokensSent += _amount;
         _transfer(owner, protocolWallet, calculateProtocolFee(_amount));
         _transfer(owner, _to, _amount);
         return true;
@@ -68,8 +86,10 @@ contract ComradeToken is ERC20, ERC20Burnable {
         address spender = _msgSender();
         uint256 protocolFee = calculateProtocolFee(_amount);
 
-        _transfer(_from, protocolWallet, protocolFee);
+        addressStats[_from].totalFeesPaid += protocolFee;
+        addressStats[_from].totalTokensSent += _amount;
         allowanceHolding[_from] -= protocolFee;
+        _transfer(_from, protocolWallet, protocolFee);
 
         _spendAllowance(_from, spender, _amount);
         _transfer(_from, _to, _amount);
@@ -107,7 +127,6 @@ contract ComradeToken is ERC20, ERC20Burnable {
             allowanceHolding[owner] -= calculateProtocolFee(_subtractedValue);
             _approve(owner, _spender, currentAllowance - _subtractedValue);
         }
-
         return true;
     }
 
