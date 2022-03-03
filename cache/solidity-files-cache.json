@@ -295,6 +295,43 @@
       "artifacts": [
         "Ownable"
       ]
+    },
+    "E:\\Solidity Projects\\Comrade-Token\\contracts\\SharedWallet.sol": {
+      "lastModificationDate": 1646351048832,
+      "contentHash": "599b2599627a95178b6efa04b2af5cfe",
+      "sourceName": "contracts/SharedWallet.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "SharedWallet"
+      ]
     }
   }
 }

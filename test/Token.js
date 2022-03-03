@@ -1,4 +1,5 @@
 const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
 describe("Token contract", function () {
     let Token;
@@ -318,6 +319,24 @@ describe("Token contract", function () {
 
       expect(await comradeToken.getTotalTokensSent(addr1.address)).to.equal(ethers.utils.parseEther("50"));
     })
+  });
 
-  })
-})
+  describe("Smart Contract Sends", function () {
+    beforeEach(async function () {
+      Wallet = await ethers.getContractFactory("SharedWallet");
+      wallet = await Wallet.deploy(comradeToken.address);
+
+      await comradeToken.transfer(wallet.address, ethers.utils.parseEther("1000"));
+    });
+    it("Should have smart contracts send only exact amounts and be taxed on the post send amount", async function () {
+      let protocolWalletBalanceStart = await comradeToken.balanceOf(protocolWallet.address);
+
+      await wallet.transferCOMRADETo(addr3.address, ethers.utils.parseEther("11"));
+
+      let protocolWalletBalanceEnd = await comradeToken.balanceOf(protocolWallet.address);
+
+      expect(protocolWalletBalanceEnd).to.equal(protocolWalletBalanceStart.add(ethers.utils.parseEther("1")));
+      expect(await comradeToken.balanceOf(addr3.address)).to.equal(ethers.utils.parseEther("10"));
+    });
+  });
+});

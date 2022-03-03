@@ -27,7 +27,8 @@ async function main() {
         "0xb15A3D29eFe51baaC8d3cd2f4F747B843FeAdA7d",
         "0x0cf275aBdF3d9F0cF2852FFbbDa16669ad2a1684",
         "0x485bce55a9152753De9a92477167Ff337e5926ca",
-        "0x749dEAfb280750C05523EB6f8c1a71bAb399951C"
+        "0x749dEAfb280750C05523EB6f8c1a71bAb399951C",
+        "0x14Aa7CAFb8871cAFA3E02688B66150a8EC338579"
     ]
     for (let i = 0; i < tokenDistributionList.length; i++) {
         await Token.transfer(tokenDistributionList[i], ethers.utils.parseEther("10000"));
