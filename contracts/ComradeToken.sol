@@ -183,9 +183,14 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         uint256 amount;
 
         if(!addressStats[owner].exemptStatus) {
-            (uint256 protocolFee, uint256 newAmount) = calculateProtocolFeeAndAmount(_amount, owner.isContract());
+            (uint256 newProtocolFee, uint256 newAmount) = calculateProtocolFeeAndAmount(_amount, owner.isContract());
             amount = newAmount;
-            allowanceHolding[owner] += protocolFee;
+
+            /// Calculating new allowance
+            uint256 oldAllowance = allowance(owner, _spender);
+            (uint256 oldProtocolFee, ) = calculateProtocolFeeAndAmount(oldAllowance, owner.isContract());
+            allowanceHolding[owner] -= oldProtocolFee;
+            allowanceHolding[owner] += newProtocolFee;
         } else {
             amount = _amount;
         }

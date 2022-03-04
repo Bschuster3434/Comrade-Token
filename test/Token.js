@@ -274,6 +274,20 @@ describe("Token contract", function () {
 
       comradeToken.connect(addr2).transferFrom(addr1.address, addr2.address, ethers.utils.parseEther("0.001"));
     })
+
+    it("Should only allow for paying taxes on the current approvals, not past approvals", async function () {
+      await comradeToken.transfer(addr1.address, ethers.utils.parseEther("10000"))
+
+      await comradeToken.connect(addr1).approve(addr3.address, ethers.utils.parseEther("100"));
+      expect(await comradeToken.getAllowanceHolding(addr1.address)).to.equal(ethers.utils.parseEther("10"));
+
+      await comradeToken.connect(addr1).approve(addr3.address, ethers.utils.parseEther("10"));
+      expect(await comradeToken.getAllowanceHolding(addr1.address)).to.equal(ethers.utils.parseEther("1"));
+
+      await comradeToken.connect(addr3).transferFrom(addr1.address, addr2.address, ethers.utils.parseEther("5"));
+      await comradeToken.connect(addr1).approve(addr3.address, 0);
+      expect(await comradeToken.getAllowanceHolding(addr1.address)).to.equal(0);
+    })
   })
   describe("AccountStatistics", function () {
     beforeEach(async function () {
