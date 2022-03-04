@@ -57,4 +57,10 @@ contract SharedWallet {
         token.transfer(_to, _amount);
         emit TransferFunds(msg.sender, _to, _amount);
     }
+
+    function approve(address _to, uint _amount)
+        validOwner
+        public {
+            token.approve(_to, _amount);
+        }
 }

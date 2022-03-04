@@ -338,5 +338,24 @@ describe("Token contract", function () {
       expect(protocolWalletBalanceEnd).to.equal(protocolWalletBalanceStart.add(ethers.utils.parseEther("1")));
       expect(await comradeToken.balanceOf(addr3.address)).to.equal(ethers.utils.parseEther("10"));
     });
+
+    it("Should allow my smart contract wallet to only send the exact tax amount", async function () {
+      let protocolWalletBalanceStart = await comradeToken.balanceOf(protocolWallet.address);
+
+      await wallet.transferCOMRADETo(addr3.address, ethers.utils.parseEther("42"));
+
+      expect(await comradeToken.balanceOf(wallet.address))
+        .to.equal(ethers.utils.parseEther(String(1000 - 42)));
+
+      await wallet.transferCOMRADETo(addr3.address, ethers.utils.parseEther("958"));
+      expect(await comradeToken.balanceOf(wallet.address))
+        .to.equal(0);
+
+    })
+    it("Should have smart contract only add or subtract pre send tax amounts on approvals", async function () {
+      await wallet.approve(addr3.address, ethers.utils.parseEther("33"));
+
+      expect(await comradeToken.getAllowanceHolding(wallet.address)).to.equal(ethers.utils.parseEther("3"));
+    });
   });
 });

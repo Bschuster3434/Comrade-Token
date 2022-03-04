@@ -94,18 +94,26 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
 
     // Calculating and Checking Protocol Fees
 
-    function calculateProtocolFee(
+    function calculateProtocolFeeAndAmount(
         uint256 _amount,
         bool payTaxBeforeSend
-    ) public view returns (uint256) {
+    ) public view returns (uint256, uint256) {
         /// payTaxBeforeSend defines whether we add tax on top of the amount
         /// If false, we add a fee on top of the amount
         /// If true, we take the fee from the amount
+        /// Returns ProtocolFee and NewAmount
+        uint256 protocolFee;
+        uint256 amount;
+
         if(payTaxBeforeSend) {
-            return (_amount / (protocolPerc + protocolDenomenator)) * protocolPerc;
+            protocolFee = (_amount / (protocolPerc + protocolDenomenator)) * protocolPerc;
+            amount = _amount - protocolFee;
         } else {
-            return (_amount * protocolPerc) / protocolDenomenator;
+            protocolFee = (_amount * protocolPerc) / protocolDenomenator;
+            amount = _amount;
         }
+
+        return (protocolFee, amount);
     }
 
     function checkProtocolFee(
@@ -113,9 +121,9 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         uint256 _amount
     ) private view returns (bool) {
         // Check if there is enough money in the account to be able
-        // To pay for the Protocol Fee      
-        uint256 amountPlusProtocolFee = _amount + calculateProtocolFee(_amount, true);
-        return balanceOf(_sender) >= amountPlusProtocolFee;
+        // To pay for the Protocol Fee 
+        (uint256 protocolFee, uint256 amount) = calculateProtocolFeeAndAmount(_amount, _sender.isContract());
+        return balanceOf(_sender) >= (protocolFee + amount);
     }
 
     // Transfers
@@ -125,15 +133,19 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         uint256 _amount
     ) public override requireProtocolFee(_msgSender(), _amount) returns (bool) {
         address owner = _msgSender();
+        uint256 amount;
 
         if(!addressStats[owner].exemptStatus) {
-            uint256 protocolFee = calculateProtocolFee(_amount, owner.isContract());
+            (uint256 protocolFee, uint256 newAmount) = calculateProtocolFeeAndAmount(_amount, owner.isContract());
+            amount = newAmount;
             addressStats[owner].totalFeesPaid += protocolFee;
             _transfer(owner, protocolWallet, protocolFee);
+        } else {
+            amount = _amount;
         }
 
-        addressStats[owner].totalTokensSent += _amount;
-        _transfer(owner, _to, _amount);
+        addressStats[owner].totalTokensSent += amount;
+        _transfer(owner, _to, amount);
         return true;
     }
 
@@ -143,17 +155,21 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         uint256 _amount
     ) public override returns (bool) {
         address spender = _msgSender();
-        uint256 protocolFee = calculateProtocolFee(_amount, _from.isContract());
+        uint256 amount;
 
         if(!addressStats[_from].exemptStatus) {
+            (uint256 protocolFee, uint256 newAmount) = calculateProtocolFeeAndAmount(_amount, _from.isContract());
+            amount = newAmount;
             addressStats[_from].totalFeesPaid += protocolFee;
             allowanceHolding[_from] -= protocolFee;
             _transfer(_from, protocolWallet, protocolFee);
+        } else {
+            amount = _amount;
         }
 
-        addressStats[_from].totalTokensSent += _amount;
-        _spendAllowance(_from, spender, _amount);
-        _transfer(_from, _to, _amount);
+        addressStats[_from].totalTokensSent += amount;
+        _spendAllowance(_from, spender, amount);
+        _transfer(_from, _to, amount);
         return true;
     }
 
@@ -164,8 +180,14 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         uint256 _amount
     ) public override requireProtocolFee(_msgSender(), _amount) returns (bool) {
         address owner = _msgSender();
+        uint256 amount;
+
         if(!addressStats[owner].exemptStatus) {
-            allowanceHolding[owner] += calculateProtocolFee(_amount, owner.isContract());
+            (uint256 protocolFee, uint256 newAmount) = calculateProtocolFeeAndAmount(_amount, owner.isContract());
+            amount = newAmount;
+            allowanceHolding[owner] += protocolFee;
+        } else {
+            amount = _amount;
         }
         _approve(owner, _spender, _amount);
         return true;
@@ -176,10 +198,17 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         uint256 _addedValue
     ) public override requireProtocolFee(_msgSender(), _addedValue) returns (bool) {
         address owner = _msgSender();
+        uint256 addedValue;
+
         if(!addressStats[owner].exemptStatus) {
-            allowanceHolding[owner] += calculateProtocolFee(_addedValue, owner.isContract());
+            (uint256 protocolFee, uint256 newAddedValue) = calculateProtocolFeeAndAmount(_addedValue, owner.isContract());
+            addedValue = newAddedValue;
+            allowanceHolding[owner] += protocolFee;
+        } else {
+            addedValue = addedValue;
         }
-        _approve(owner, _spender, allowance(owner, _spender) + _addedValue);
+
+        _approve(owner, _spender, allowance(owner, _spender) + addedValue);
         return true;
     }
 
@@ -188,11 +217,17 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         uint256 _subtractedValue
     ) public override returns (bool) {
         address owner = _msgSender();
+        uint256 subtractedValue;
         uint256 currentAllowance = allowance(owner, _spender);
+
         require(currentAllowance >= _subtractedValue, "ERC20: decreased allowance below zero");
         unchecked {
             if(!addressStats[owner].exemptStatus) {
-                allowanceHolding[owner] -= calculateProtocolFee(_subtractedValue, owner.isContract());
+                (uint256 protocolFee, uint256 newSubtractedValue) = calculateProtocolFeeAndAmount(_subtractedValue, owner.isContract());
+                subtractedValue = newSubtractedValue;
+                allowanceHolding[owner] -= protocolFee;
+            } else {
+                subtractedValue = _subtractedValue;
             }
             _approve(owner, _spender, currentAllowance - _subtractedValue);
         }

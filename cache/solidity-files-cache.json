@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "E:\\Solidity Projects\\Comrade-Token\\contracts\\ComradeToken.sol": {
-      "lastModificationDate": 1646394928774,
-      "contentHash": "9d87c6f7ec6faf13159ba800b48d5708",
+      "lastModificationDate": 1646396120826,
+      "contentHash": "40258060ac027eea90ac2e032d732592",
       "sourceName": "contracts/ComradeToken.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -298,8 +298,8 @@
       ]
     },
     "E:\\Solidity Projects\\Comrade-Token\\contracts\\SharedWallet.sol": {
-      "lastModificationDate": 1646351048832,
-      "contentHash": "599b2599627a95178b6efa04b2af5cfe",
+      "lastModificationDate": 1646396452525,
+      "contentHash": "e0a1863184cdc8f0ef4584ddec5af5ba",
       "sourceName": "contracts/SharedWallet.sol",
       "solcConfig": {
         "version": "0.8.4",
