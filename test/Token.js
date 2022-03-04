@@ -207,7 +207,29 @@ describe("Token contract", function () {
       await comradeToken.connect(addr1).decreaseAllowance(addr2.address, ethers.utils.parseEther("100"));
       expect(await comradeToken.getAllowanceHolding(addr1.address)).to.equal(0);      
     })
+
+    it("Should emit an event when fees are paid", async function () {
+      expect(await comradeToken.transfer(addr3.address, ethers.utils.parseEther("10")))
+        .to.emit(comradeToken, 'FeesPaid')
+        .withArgs(owner.address, ethers.utils.parseEther("1"));
+
+      await comradeToken.approve(addr3.address, ethers.utils.parseEther("10"));
+      expect(await comradeToken.connect(addr3).transferFrom(owner.address, addr2.address, ethers.utils.parseEther("10")))
+        .to.emit(comradeToken, 'FeesPaid')
+        .withArgs(owner.address, ethers.utils.parseEther("1"));
+    })
+
+    it("Should emit an event when exemption is added", async function () {
+      expect(await comradeToken.addExemptAddress(addr3.address))
+        .to.emit(comradeToken, 'AddedExemptAddress')
+        .withArgs(addr3.address); 
+        
+        expect(await comradeToken.removeExemptAddress(addr3.address))
+        .to.emit(comradeToken, 'RemoveExemptAddress')
+        .withArgs(addr3.address);      
+    })
   });
+
   describe("Account Approvals", function () {
     it("Should tax the sender when approving tokens for another account", async function () {
       await comradeToken.transfer(addr1.address, ethers.utils.parseEther("100"));
@@ -289,7 +311,7 @@ describe("Token contract", function () {
       expect(await comradeToken.getAllowanceHolding(addr1.address)).to.equal(0);
     })
   })
-  describe("AccountStatistics", function () {
+  describe("Account Statistics", function () {
     beforeEach(async function () {
       await comradeToken.transfer(addr1.address, ethers.utils.parseEther("1000"));
     })
