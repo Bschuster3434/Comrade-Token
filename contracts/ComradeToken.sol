@@ -4,8 +4,12 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 contract ComradeToken is ERC20, ERC20Burnable, Ownable {
+
+    using Address for address;
+
     uint16 private protocolDenomenator = 10 ** 4;
     uint16 private protocolPerc;
     address payable private protocolWallet;
@@ -41,6 +45,8 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         _;
     }
 
+    /// Getter Functions
+
     function getAllowanceHolding(address _user) public view returns (uint256) {
         return allowanceHolding[_user];
     }
@@ -65,6 +71,8 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         return addressStats[_user].exemptStatus;
     }
 
+    // Setter Functions
+
     function setProtocolPerc(uint16 _newProtocolPerc) external onlyOwner {
         require(_newProtocolPerc <= protocolDenomenator, "Cannot set protocol greater than 100%");
         protocolPerc = _newProtocolPerc;
@@ -84,10 +92,20 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         addressStats[_user].exemptStatus = false;
     }    
 
+    // Calculating and Checking Protocol Fees
+
     function calculateProtocolFee(
-        uint256 _amount
+        uint256 _amount,
+        bool payTaxBeforeSend
     ) public view returns (uint256) {
-        return (_amount * protocolPerc) / protocolDenomenator;
+        /// payTaxBeforeSend defines whether we add tax on top of the amount
+        /// If false, we add a fee on top of the amount
+        /// If true, we take the fee from the amount
+        if(payTaxBeforeSend) {
+            return (_amount / (protocolPerc + protocolDenomenator)) * protocolPerc;
+        } else {
+            return (_amount * protocolPerc) / protocolDenomenator;
+        }
     }
 
     function checkProtocolFee(
@@ -96,9 +114,11 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
     ) private view returns (bool) {
         // Check if there is enough money in the account to be able
         // To pay for the Protocol Fee      
-        uint256 amountPlusProtocolFee = _amount + calculateProtocolFee(_amount);
+        uint256 amountPlusProtocolFee = _amount + calculateProtocolFee(_amount, true);
         return balanceOf(_sender) >= amountPlusProtocolFee;
     }
+
+    // Transfers
 
     function transfer(
         address _to, 
@@ -107,9 +127,9 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         address owner = _msgSender();
 
         if(!addressStats[owner].exemptStatus) {
-            uint256 protocolFee = calculateProtocolFee(_amount);
+            uint256 protocolFee = calculateProtocolFee(_amount, owner.isContract());
             addressStats[owner].totalFeesPaid += protocolFee;
-            _transfer(owner, protocolWallet, calculateProtocolFee(_amount));
+            _transfer(owner, protocolWallet, protocolFee);
         }
 
         addressStats[owner].totalTokensSent += _amount;
@@ -123,7 +143,7 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         uint256 _amount
     ) public override returns (bool) {
         address spender = _msgSender();
-        uint256 protocolFee = calculateProtocolFee(_amount);
+        uint256 protocolFee = calculateProtocolFee(_amount, _from.isContract());
 
         if(!addressStats[_from].exemptStatus) {
             addressStats[_from].totalFeesPaid += protocolFee;
@@ -137,13 +157,15 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         return true;
     }
 
+    // Approvals
+
     function approve(
         address _spender, 
         uint256 _amount
     ) public override requireProtocolFee(_msgSender(), _amount) returns (bool) {
         address owner = _msgSender();
         if(!addressStats[owner].exemptStatus) {
-            allowanceHolding[owner] += calculateProtocolFee(_amount);
+            allowanceHolding[owner] += calculateProtocolFee(_amount, owner.isContract());
         }
         _approve(owner, _spender, _amount);
         return true;
@@ -155,7 +177,7 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
     ) public override requireProtocolFee(_msgSender(), _addedValue) returns (bool) {
         address owner = _msgSender();
         if(!addressStats[owner].exemptStatus) {
-            allowanceHolding[owner] += calculateProtocolFee(_addedValue);
+            allowanceHolding[owner] += calculateProtocolFee(_addedValue, owner.isContract());
         }
         _approve(owner, _spender, allowance(owner, _spender) + _addedValue);
         return true;
@@ -170,7 +192,7 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         require(currentAllowance >= _subtractedValue, "ERC20: decreased allowance below zero");
         unchecked {
             if(!addressStats[owner].exemptStatus) {
-                allowanceHolding[owner] -= calculateProtocolFee(_subtractedValue);
+                allowanceHolding[owner] -= calculateProtocolFee(_subtractedValue, owner.isContract());
             }
             _approve(owner, _spender, currentAllowance - _subtractedValue);
         }
