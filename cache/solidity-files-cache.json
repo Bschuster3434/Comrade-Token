@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "E:\\Solidity Projects\\Comrade-Token\\contracts\\ComradeToken.sol": {
-      "lastModificationDate": 1646245843060,
-      "contentHash": "1c29bfb0aaf71cb4eeb5ea60292161fd",
+      "lastModificationDate": 1646396120826,
+      "contentHash": "40258060ac027eea90ac2e032d732592",
       "sourceName": "contracts/ComradeToken.sol",
       "solcConfig": {
         "version": "0.8.4",
@@ -29,10 +29,10 @@
         }
       },
       "imports": [
-        "hardhat/console.sol",
         "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol",
-        "@openzeppelin/contracts/access/Ownable.sol"
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/Address.sol"
       ],
       "versionPragmas": [
         "^0.8.4"
@@ -295,6 +295,78 @@
       ],
       "artifacts": [
         "Ownable"
+      ]
+    },
+    "E:\\Solidity Projects\\Comrade-Token\\contracts\\SharedWallet.sol": {
+      "lastModificationDate": 1646396452525,
+      "contentHash": "e0a1863184cdc8f0ef4584ddec5af5ba",
+      "sourceName": "contracts/SharedWallet.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.4"
+      ],
+      "artifacts": [
+        "SharedWallet"
+      ]
+    },
+    "E:\\Solidity Projects\\Comrade-Token\\node_modules\\@openzeppelin\\contracts\\utils\\Address.sol": {
+      "lastModificationDate": 1645911163720,
+      "contentHash": "ad714a6368ee7d43cded6bbe8af0b155",
+      "sourceName": "@openzeppelin/contracts/utils/Address.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.1"
+      ],
+      "artifacts": [
+        "Address"
       ]
     }
   }
