@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "E:\\Solidity Projects\\Comrade-Token\\contracts\\ComradeToken.sol": {
-      "lastModificationDate": 1646409681534,
-      "contentHash": "2e4c713ac401605fac1d78888d5879b7",
+      "lastModificationDate": 1646412445322,
+      "contentHash": "9feb5592f57d95aecc4680e681b0c9b6",
       "sourceName": "contracts/ComradeToken.sol",
       "solcConfig": {
         "version": "0.8.4",
