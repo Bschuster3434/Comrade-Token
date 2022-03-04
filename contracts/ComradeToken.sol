@@ -33,7 +33,7 @@ contract ComradeToken is ERC20, ERC20Burnable, Ownable {
         string memory _tokenSymbol
     ) ERC20(_tokenName, _tokenSymbol) {
         require(_protocolPerc <= protocolDenomenator, "Cannot set protocol greater than 100%");
-        _mint(msg.sender, 1000000000 * 18 ** decimals());
+        _mint(msg.sender, 1000000000 * 10 ** 18);
         protocolPerc = _protocolPerc; // protocol percentage is ( protocalPerc / 10 ** 4)
         protocolWallet = _protocolWallet;
     }

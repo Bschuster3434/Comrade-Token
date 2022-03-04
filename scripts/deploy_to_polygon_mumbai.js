@@ -3,8 +3,8 @@ const { ethers } = require("hardhat");
 async function main() {
     //Defining the Mumbai Testnet Variables
     let protocolPerc = 100;
-    let tokenName = "Comrade Token";
-    let tokenSymbol = "COMRADE";
+    let tokenName = "Comrade Token v2";
+    let tokenSymbol = "COMRADE2";
 
     const [deployer, protocol] = await ethers.getSigners();
     let protocolWallet = protocol.address;
